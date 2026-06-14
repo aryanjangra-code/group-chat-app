@@ -101,6 +101,9 @@ socket.on("user_left", ({ username, onlineCount: count, users }) => {
 });
 
 socket.on("chat_message", (msg) => addMessage(msg));
+socket.on("chat_history", (messages) => {
+  messages.forEach(msg => addMessage(msg));
+});
 
 // ── Typing indicator ─────────────────────────────────────────────────────────
 let typingUsers = new Set();

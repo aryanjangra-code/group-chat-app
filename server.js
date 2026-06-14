@@ -4,11 +4,9 @@ const http = require("http");
 const { Server } = require("socket.io");
 const path = require("path");
 const mongoose = require("mongoose");
-
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
-
 const Message = require('./models/Message');
 
 // Connect to MongoDB using the URI from your .env file
