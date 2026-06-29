@@ -9,16 +9,10 @@ A minimal, beautiful single-room group chat built with **Node.js**, **Express**,
 - Online user list with count
 - Mobile responsive
 
-## Run Locally
 
-```bash
-npm install
-npm start         # production
-npm run dev       # development (auto-restart with nodemon)
-```
 
-Open `http://localhost:3000` in multiple tabs to test.
 
 ## Deploy
 
-See deployment guide below (Railway, Render, or VPS).
+See deployment on Railway.
+https://group-chat-app-production-0ca0.up.railway.app/
