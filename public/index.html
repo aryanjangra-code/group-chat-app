@@ -15,8 +15,12 @@
   <div class="join-card">
     <div class="join-logo">GroupChat </div>
     <p class="join-sub">One room. Everyone's here.</p>
-    <input type="text" id="username-input" placeholder="Pick a username…" maxlength="20" autocomplete="off"/>
-    <button class="btn-join" id="join-btn">Enter the room →</button>
+    <input type="text" id="username-input" placeholder="Type your username…" maxlength="20" autocomplete="off" />
+    <input type="email" id="email-input" placeholder="Email (for new users)" autocomplete="email" />
+    <input type="password" id="password-input" placeholder="Type your password…" maxlength="20" autocomplete="off"  />
+    <p id="login-error" style="color: red; display: none; margin-top: 10px;"></p>
+    <button class="btn-join" id="join-btn">Login →</button>
+    <button class="btn-secondary" id="register-btn">Register New Account</button>
   </div>
 </div>
 

@@ -6,7 +6,10 @@ let myUsername = "";
 const joinScreen = document.getElementById("join-screen");
 const chatScreen = document.getElementById("chat-screen");
 const usernameInput = document.getElementById("username-input");
+const emailInput = document.getElementById("email-input"); // Add reference for email
+const passwordInput = document.getElementById("password-input");
 const joinBtn = document.getElementById("join-btn");
+const registerBtn = document.getElementById("register-btn"); // Add reference for register button
 const messages = document.getElementById("messages");
 const msgInput = document.getElementById("msg-input");
 const sendBtn = document.getElementById("send-btn");
@@ -14,20 +17,65 @@ const userList = document.getElementById("user-list");
 const onlineCount = document.getElementById("online-count");
 const typingEl = document.getElementById("typing-indicator");
 const myNameBadge = document.getElementById("my-name-badge");
+const loginError = document.getElementById("login-error"); // Assuming you add an element with this ID for errors
 
 // ── Join ────────────────────────────────────────────────────────────────────
-function doJoin() {
-    const name = usernameInput.value.trim();
-    if (!name) { usernameInput.focus(); return; }
-    myUsername = name;
-    socket.emit("join", name);
-    joinScreen.classList.add("hidden");
-    setTimeout(() => chatScreen.classList.add("visible"), 100);
-    myNameBadge.textContent = `you: ${name}`;
+async function doJoin(){
+
+    try {
+        if(!usernameInput || !passwordInput) {
+            console.error("Error: One or more required elements not found");
+        }
+        else {
+            const name = usernameInput.value.trim();
+            if (!name) { usernameInput.focus(); return; }
+            myUsername = name;
+            socket.emit("join", name, passwordInput.value); // No need to trim password here
+        }
+    } catch (e) {
+        console.error("Error initializing socket connection:", e);
+    }
 }
 
-joinBtn.addEventListener("click", doJoin);
+async function doRegister() {
+    const username = usernameInput.value.trim();
+    const email = emailInput.value.trim();
+    const password = passwordInput.value;
+
+    if (!username || !email || !password) {
+        loginError.textContent = "Username, email, and password are required.";
+        loginError.style.display = 'block';
+        return;
+    }
+
+    try {
+        const response = await fetch('/api/register', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username, email, password }),
+        });
+
+        const result = await response.json();
+
+        if (response.ok) {
+            loginError.style.color = 'green'; // Success message
+            loginError.textContent = result.message;
+            loginError.style.display = 'block';
+        } else {
+            loginError.style.color = 'red'; // Error message
+            loginError.textContent = result.message;
+            loginError.style.display = 'block';
+        }
+    } catch (error) {
+        loginError.textContent = "Failed to connect to the server.";
+        loginError.style.display = 'block';
+    }
+}
+
+if (joinBtn) joinBtn.addEventListener("click", doJoin);
+if (registerBtn) registerBtn.addEventListener("click", doRegister);
 usernameInput.addEventListener("keydown", e => { if (e.key === "Enter") doJoin(); });
+passwordInput.addEventListener("keydown", e => { if (e.key === "Enter") doJoin(); });
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 function scrollBottom() {
@@ -88,10 +136,27 @@ function updateUserList(users) {
 }
 
 // ── Socket events ────────────────────────────────────────────────────────────
+socket.on("auth_failed", (message) => {
+    myUsername = ""; // Reset username on failure
+    // Show an error message to the user
+    loginError.style.color = 'red';
+    if (loginError) {
+        loginError.textContent = message;
+        loginError.style.display = 'block';
+    }
+    alert(`Login Failed: ${message}`); // Simple alert as a fallback
+});
+
 socket.on("user_joined", ({ username, onlineCount: count, users }) => {
     onlineCount.textContent = count;
     updateUserList(users);
-    if (username !== myUsername) addSystemMsg(`${username} joined the room`);
+    if (username === myUsername) { // This is me joining
+        joinScreen.classList.add("hidden");
+        setTimeout(() => chatScreen.classList.add("visible"), 100);
+        myNameBadge.textContent = `you: ${username}`;
+    } else { // Someone else joined
+        addSystemMsg(`${username} joined the room`);
+    }
 });
 
 socket.on("user_left", ({ username, onlineCount: count, users }) => {

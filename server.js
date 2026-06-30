@@ -8,17 +8,68 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 const Message = require('./models/Message');
+const User = require('./models/User'); // Import the User model
+const verifyUserLogin = require('./verifyuser');
 
-// Connect to MongoDB using the URI from your .env file
-mongoose.connect(process.env.MONGO_URI)
-  .then(() => console.log("📦 Connected to MongoDB Atlas"))
-  .catch((err) => {
-    console.error("❌ Database connection error:", err.message);
-    process.exit(1); // Kills the server if the DB fails to connect
-  });
+const connectDB = async () => {
+    try {
+        await mongoose.connect(process.env.MONGO_URI);
+        console.log("📦 Connected to MongoDB Atlas");
+    } catch (err) {
+        console.error("❌ Database connection error:", err.message);
+        process.exit(1);
+    }
+};
 
-// Serve static files from /public
+// Middlewares
+app.use(express.json()); // Add this to parse JSON request bodies
 app.use(express.static(path.join(__dirname, "public")));
+
+app.post('/api/login', async (req, res) => {
+    const { username, password } = req.body;
+    if (!username || !password) {
+        return res.status(400).json({ message: 'Username and password are required' });
+    }
+
+    const authResult = await verifyUserLogin(username, password);
+
+    if (authResult.success) {
+        // Generate your JWT here using authResult.userId
+        res.status(200).json({ message: authResult.message, userId: authResult.userId });
+    } else {
+        res.status(401).json({ message: authResult.message });
+    }
+});
+
+app.post('/api/register', async (req, res) => {
+    const { username, email, password } = req.body;
+
+    if (!username || !email || !password) {
+        return res.status(400).json({ message: 'Username, email, and password are required' });
+    }
+
+    try {
+        // Check if username or email already exists
+        const existingUser = await User.findOne({ $or: [{ username }, { email }] });
+        if (existingUser) {
+            return res.status(409).json({ message: 'Username or email already exists' });
+        }
+
+        // Create a new user instance (password will be hashed by the pre-save hook)
+        const newUser = new User({
+            username,
+            email,
+            password
+        });
+
+        await newUser.save();
+
+        res.status(201).json({ message: 'User registered successfully! You can now log in.' });
+    } catch (error) {
+        console.error("Registration Error:", error);
+        res.status(500).json({ message: error.message || 'An internal server error occurred' });
+    }
+});
 
 // Track online users: { socketId -> username }
 const onlineUsers = new Map();
@@ -26,10 +77,28 @@ const onlineUsers = new Map();
 io.on("connection", (socket) => {
   console.log(`🔌 Socket connected: ${socket.id}`);
 
-  // ── JOIN ────────────────────────────────────────────────────────────────────
-  socket.on("join", async (username) => {
-    const trimmed = username.trim().slice(0, 20);
-    if (!trimmed) return;
+  // ── JOIN (with Authentication) ──────────────────────────────────────────────
+  socket.on("join", async (username, password) => {
+    const trimmed = username.trim();
+    if (!trimmed || !password) {
+      socket.emit("auth_failed", "Username and password are required.");
+      return;
+    }
+
+    const authResult = await verifyUserLogin(trimmed, password);
+
+    if (!authResult.success) {
+      // Inform the client that authentication failed
+      socket.emit("auth_failed", authResult.message);
+      return;
+    }
+
+    // Check if username is already taken by an online user
+    const isUsernameTaken = [...onlineUsers.values()].some(user => user.toLowerCase() === trimmed.toLowerCase());
+    if (isUsernameTaken) {
+      socket.emit("auth_failed", `Username "${trimmed}" is already in use.`);
+      return;
+    }
 
     onlineUsers.set(socket.id, trimmed);
 
@@ -98,7 +167,12 @@ io.on("connection", (socket) => {
   });
 });
 
-const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => {
-  console.log(`\n🚀 Chat server running → http://localhost:${PORT}\n`);
-});
+const startServer = async () => {
+  await connectDB();
+  const PORT = process.env.PORT || 3000;
+  server.listen(PORT, () => {
+    console.log(`\n🚀 Chat server running → http://localhost:${PORT}\n`);
+  });
+};
+
+startServer();
