@@ -2,14 +2,14 @@ const socket = io();
 
 let myUsername = "";
 
-// ── DOM refs ────────────────────────────────────────────────────────────────
+
 const joinScreen = document.getElementById("join-screen");
 const chatScreen = document.getElementById("chat-screen");
 const usernameInput = document.getElementById("username-input");
-const emailInput = document.getElementById("email-input"); // Add reference for email
+const emailInput = document.getElementById("email-input"); 
 const passwordInput = document.getElementById("password-input");
 const joinBtn = document.getElementById("join-btn");
-const registerBtn = document.getElementById("register-btn"); // Add reference for register button
+const registerBtn = document.getElementById("register-btn"); 
 const messages = document.getElementById("messages");
 const msgInput = document.getElementById("msg-input");
 const sendBtn = document.getElementById("send-btn");
@@ -17,9 +17,8 @@ const userList = document.getElementById("user-list");
 const onlineCount = document.getElementById("online-count");
 const typingEl = document.getElementById("typing-indicator");
 const myNameBadge = document.getElementById("my-name-badge");
-const loginError = document.getElementById("login-error"); // Assuming you add an element with this ID for errors
+const loginError = document.getElementById("login-error"); 
 
-// ── Join ────────────────────────────────────────────────────────────────────
 async function doJoin(){
 
     try {
@@ -30,7 +29,7 @@ async function doJoin(){
             const name = usernameInput.value.trim();
             if (!name) { usernameInput.focus(); return; }
             myUsername = name;
-            socket.emit("join", name, passwordInput.value); // No need to trim password here
+            socket.emit("join", name, passwordInput.value);
         }
     } catch (e) {
         console.error("Error initializing socket connection:", e);
@@ -58,11 +57,11 @@ async function doRegister() {
         const result = await response.json();
 
         if (response.ok) {
-            loginError.style.color = 'green'; // Success message
+            loginError.style.color = 'green'; 
             loginError.textContent = result.message;
             loginError.style.display = 'block';
         } else {
-            loginError.style.color = 'red'; // Error message
+            loginError.style.color = 'red'; 
             loginError.textContent = result.message;
             loginError.style.display = 'block';
         }
@@ -77,7 +76,7 @@ if (registerBtn) registerBtn.addEventListener("click", doRegister);
 usernameInput.addEventListener("keydown", e => { if (e.key === "Enter") doJoin(); });
 passwordInput.addEventListener("keydown", e => { if (e.key === "Enter") doJoin(); });
 
-// ── Helpers ─────────────────────────────────────────────────────────────────
+
 function scrollBottom() {
     messages.scrollTop = messages.scrollHeight;
 }
@@ -135,26 +134,25 @@ function updateUserList(users) {
     });
 }
 
-// ── Socket events ────────────────────────────────────────────────────────────
+
 socket.on("auth_failed", (message) => {
-    myUsername = ""; // Reset username on failure
-    // Show an error message to the user
+    myUsername = ""; 
     loginError.style.color = 'red';
     if (loginError) {
         loginError.textContent = message;
         loginError.style.display = 'block';
     }
-    alert(`Login Failed: ${message}`); // Simple alert as a fallback
+    alert(`Login Failed: ${message}`); 
 });
 
 socket.on("user_joined", ({ username, onlineCount: count, users }) => {
     onlineCount.textContent = count;
     updateUserList(users);
-    if (username === myUsername) { // This is me joining
+    if (username === myUsername) { 
         joinScreen.classList.add("hidden");
         setTimeout(() => chatScreen.classList.add("visible"), 100);
         myNameBadge.textContent = `you: ${username}`;
-    } else { // Someone else joined
+    } else { 
         addSystemMsg(`${username} joined the room`);
     }
 });
@@ -170,7 +168,7 @@ socket.on("chat_history", (messages) => {
   messages.forEach(msg => addMessage(msg));
 });
 
-// ── Typing indicator ─────────────────────────────────────────────────────────
+
 let typingUsers = new Set();
 let typingTimeout;
 
@@ -191,7 +189,7 @@ function renderTyping() {
 }
 
 
-// ── Send message ─────────────────────────────────────────────────────────────
+
 let isTyping = false;
 
 function sendMessage() {
@@ -200,7 +198,6 @@ function sendMessage() {
     socket.emit("chat_message", text);
     msgInput.value = "";
     msgInput.style.height = "auto";
-    // Stop typing
     if (isTyping) {
         isTyping = false;
         socket.emit("typing", false);
@@ -216,12 +213,12 @@ msgInput.addEventListener("keydown", e => {
     }
 });
 
-// Auto-resize textarea
+
 msgInput.addEventListener("input", () => {
     msgInput.style.height = "auto";
     msgInput.style.height = Math.min(msgInput.scrollHeight, 100) + "px";
 
-    // Typing indicator
+    
     if (!isTyping && msgInput.value.trim()) {
         isTyping = true;
         socket.emit("typing", true);

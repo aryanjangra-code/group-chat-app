@@ -8,7 +8,7 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 const Message = require('./models/Message');
-const User = require('./models/User'); // Import the User model
+const User = require('./models/User'); 
 const verifyUserLogin = require('./verifyuser');
 
 const connectDB = async () => {
@@ -22,7 +22,7 @@ const connectDB = async () => {
 };
 
 // Middlewares
-app.use(express.json()); // Add this to parse JSON request bodies
+app.use(express.json());
 app.use(express.static(path.join(__dirname, "public")));
 
 app.post('/api/login', async (req, res) => {
@@ -34,7 +34,6 @@ app.post('/api/login', async (req, res) => {
     const authResult = await verifyUserLogin(username, password);
 
     if (authResult.success) {
-        // Generate your JWT here using authResult.userId
         res.status(200).json({ message: authResult.message, userId: authResult.userId });
     } else {
         res.status(401).json({ message: authResult.message });
@@ -49,13 +48,11 @@ app.post('/api/register', async (req, res) => {
     }
 
     try {
-        // Check if username or email already exists
         const existingUser = await User.findOne({ $or: [{ username }, { email }] });
         if (existingUser) {
             return res.status(409).json({ message: 'Username or email already exists' });
         }
 
-        // Create a new user instance (password will be hashed by the pre-save hook)
         const newUser = new User({
             username,
             email,
@@ -71,13 +68,12 @@ app.post('/api/register', async (req, res) => {
     }
 });
 
-// Track online users: { socketId -> username }
+// Track online users
 const onlineUsers = new Map();
 
 io.on("connection", (socket) => {
   console.log(`🔌 Socket connected: ${socket.id}`);
 
-  // ── JOIN (with Authentication) ──────────────────────────────────────────────
   socket.on("join", async (username, password) => {
     const trimmed = username.trim();
     if (!trimmed || !password) {
@@ -88,12 +84,10 @@ io.on("connection", (socket) => {
     const authResult = await verifyUserLogin(trimmed, password);
 
     if (!authResult.success) {
-      // Inform the client that authentication failed
       socket.emit("auth_failed", authResult.message);
       return;
     }
 
-    // Check if username is already taken by an online user
     const isUsernameTaken = [...onlineUsers.values()].some(user => user.toLowerCase() === trimmed.toLowerCase());
     if (isUsernameTaken) {
       socket.emit("auth_failed", `Username "${trimmed}" is already in use.`);
@@ -103,16 +97,13 @@ io.on("connection", (socket) => {
     onlineUsers.set(socket.id, trimmed);
 
     try {
-      // Fetch the last 50 messages from the database
       const chatHistory = await Message.find().sort({ timestamp: -1 }).limit(50);
       
-      // Send history ONLY to the user who just joined (reverse so oldest is at the top)
       socket.emit("chat_history", chatHistory.reverse());
     } catch (err) {
       console.error("⚠️ Failed to load history:", err);
     }
 
-    // Tell everyone this user joined
     io.emit("user_joined", {
       username: trimmed,
       onlineCount: onlineUsers.size,
@@ -122,7 +113,6 @@ io.on("connection", (socket) => {
     console.log(`👤 ${trimmed} joined  (${onlineUsers.size} online)`);
   });
 
-  // ── CHAT MESSAGE ────────────────────────────────────────────────────────────
   socket.on("chat_message", async (text) => {
     const username = onlineUsers.get(socket.id);
     if (!username || !text.trim()) return;
@@ -133,10 +123,8 @@ io.on("connection", (socket) => {
     };
 
     try {
-      // 1. Save message to MongoDB
       const savedMsg = await Message.create(msgData);
       
-      // 2. Broadcast the SAVED message (which has the MongoDB timestamp) to ALL
       io.emit("chat_message", savedMsg);
       console.log(`💬 [${username}]: ${savedMsg.text}`);
     } catch (err) {
@@ -144,15 +132,12 @@ io.on("connection", (socket) => {
     }
   });
 
-  // ── TYPING INDICATOR ────────────────────────────────────────────────────────
   socket.on("typing", (isTyping) => {
     const username = onlineUsers.get(socket.id);
     if (!username) return;
-    // Broadcast to everyone EXCEPT the sender
     socket.broadcast.emit("typing", { username, isTyping });
   });
 
-  // ── DISCONNECT ──────────────────────────────────────────────────────────────
   socket.on("disconnect", () => {
     const username = onlineUsers.get(socket.id);
     if (username) {
