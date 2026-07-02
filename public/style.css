@@ -59,6 +59,22 @@
  }
 
  .join-card {
+     display: flex;
+     flex-direction: column;
+     background: var(--surface);
+     border: 1px solid var(--border);
+     border-radius: 24px;
+     padding: 48px 40px;
+     width: 100%;
+     max-width: 420px;
+     text-align: center;
+     box-shadow: 0 32px 80px rgba(0, 0, 0, .6);
+ }
+
+ .register-card {
+     display: none;
+     position: relative;
+     flex-direction: column;
      background: var(--surface);
      border: 1px solid var(--border);
      border-radius: 24px;
@@ -101,6 +117,20 @@
      margin-bottom: 14px;
  }
 
+ .register-card input {
+     width: 100%;
+     background: var(--panel);
+     border: 1.5px solid var(--border);
+     border-radius: 12px;
+     padding: 14px 18px;
+     font-size: 1rem;
+     font-family: var(--font-body);
+     color: var(--text);
+     outline: none;
+     transition: border-color .2s;
+     margin-bottom: 14px;
+ }
+
  .join-card input:focus {
      border-color: var(--accent);
  }
@@ -123,6 +153,20 @@
      letter-spacing: .5px;
      transition: opacity .2s, transform .15s;
  }
+ .backtologin{
+    width: 15%;
+    position: absolute;
+    top: 10px;
+    left: 20px;
+     background: var(--surface);
+     border: none;
+     font-family: var(--font-head);
+     font-size: 2.5rem;
+     color:  var(--accent);
+     cursor: pointer;
+     letter-spacing: .5px;
+     transition: opacity .2s, transform .15s;
+ }
 
  .btn-join:hover {
      opacity: .9;
@@ -131,6 +175,22 @@
 
  .btn-join:active {
      transform: translateY(0);
+ }
+
+ #register-btn {
+     width: 50%;
+     background: linear-gradient(135deg, var(--accent), var(--accent2));
+     border: none;
+     border-radius: 12px;
+     padding: 10px;
+     margin: 5px auto;
+     font-family: var(--font-head);
+     font-weight: 600;
+     font-size: 0.7rem;
+     color: #0d0f14;
+     cursor: pointer;
+     letter-spacing: .5px;
+     transition: opacity .2s, transform .15s;
  }
 
  /* ── Chat Layout ─────────────────────────────────────────────── */
@@ -287,7 +347,7 @@
      font-weight: 500;
  }
 
- 
+
  #messages {
      flex: 1;
      overflow-y: auto;
@@ -299,26 +359,14 @@
      scrollbar-color: var(--border) transparent;
  }
 
- #register-btn{
-        width: 50%;
-        background: linear-gradient(135deg, var(--accent), var(--accent2));
-        border: none;
-        border-radius: 12px;
-        padding: 10px;
-        margin: 5px auto;
-        font-family: var(--font-head);
-        font-weight: 600;
-        font-size: 0.7rem;
-        color: #0d0f14;
-        cursor: pointer;
-        letter-spacing: .5px;
-        transition: opacity .2s, transform .15s;
- }
 
 
- #login-error{
-    color: red; display: none; margin-top: 10px;
+ #login-error {
+     color: red;
+     display: none;
+     margin-top: 10px;
  }
+
  .msg-row {
      display: flex;
      align-items: flex-end;
