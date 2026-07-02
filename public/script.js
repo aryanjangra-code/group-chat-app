@@ -6,8 +6,10 @@ let myUsername = "";
 const joinScreen = document.getElementById("join-screen");
 const chatScreen = document.getElementById("chat-screen");
 const usernameInput = document.getElementById("username-input");
-const emailInput = document.getElementById("email-input");
 const passwordInput = document.getElementById("password-input");
+const registerusername = document.getElementById("register-username");
+const registeremail = document.getElementById("register-email");
+const registerpassword = document.getElementById("register-password");
 const joinBtn = document.getElementById("join-btn");
 const registerBtn = document.getElementById("register-btn");
 const registerSubmitBtn = document.getElementById("register-submit");
@@ -41,9 +43,9 @@ async function doJoin() {
 }
 
 async function doRegister() {
-    const username = usernameInput.value.trim();
-    const email = emailInput.value.trim();
-    const password = passwordInput.value;
+    const username = registerusername.value.trim();
+    const email = registeremail.value.trim();
+    const password = registerpassword.value;
 
     if (!username || !email || !password) {
         loginError.textContent = "Username, email, and password are required.";
