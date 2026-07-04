@@ -35,26 +35,4 @@ Follow these instructions to get a copy of the project up and running on your lo
 
 ### Prerequisites
 
-You need to have [Node.js](https://nodejs.org/) and [npm](https://www.npmjs.com/) (or yarn) installed on your machine.
-
-### Installation
-
-1.  **Clone the repository:**
-    ```sh
-    git clone https://github.com/your-username/groupchatapp.git
-    cd groupchatapp
-    ```
-
-2.  **Install server dependencies:**
-    ```sh
-    npm install
-    ```
-
-3.  **Start the development server:**
-    ```sh
-    npm start
-    ```
-
-4.  Open your browser and navigate to `http://localhost:3000`.
-
-
+You need to have [Node.js](https://nodejs.org/) and [npm](https://www.npmjs.com/) installed on your machine.
