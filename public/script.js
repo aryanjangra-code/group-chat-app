@@ -22,7 +22,30 @@ const onlineCount = document.getElementById("online-count");
 const typingEl = document.getElementById("typing-indicator");
 const myNameBadge = document.getElementById("my-name-badge");
 const loginError = document.getElementById("login-error");
+const themeToggle1 = document.querySelector(".theme-toggle1");
+const themeToggle2 = document.querySelector(".theme-toggle2");
 
+
+
+themeToggle1.addEventListener('click', () => {
+    document.body.classList.toggle('light-theme');
+    const isLight = document.body.classList.contains('light-theme');
+    localStorage.setItem('login_theme', isLight ? 'light' : 'dark');
+});
+
+if (localStorage.getItem('login_theme') === 'light') {
+    document.body.classList.add('light-theme');
+}
+
+themeToggle2.addEventListener('click', () => {
+    document.body.classList.toggle('light-theme');
+    const isLight = document.body.classList.contains('light-theme');
+    localStorage.setItem('chat_theme', isLight ? 'light' : 'dark');
+});
+
+if (localStorage.getItem('chat_theme') === 'light') {
+    document.body.classList.add('light-theme');
+}
 
 
 async function doJoin() {
@@ -90,6 +113,22 @@ if (backtologinbtn) backtologinbtn.addEventListener("click", () => {
 usernameInput.addEventListener("keydown", e => { if (e.key === "Enter") doJoin(); });
 passwordInput.addEventListener("keydown", e => { if (e.key === "Enter") doJoin(); });
 
+
+// --- Theme Toggle Logic ---
+function applyTheme(theme) {
+    if (theme === 'light') {
+        document.body.classList.add('light-theme');
+        themeToggle.textContent = '🌙';
+        localStorage.setItem('chat_theme', 'light');
+    } else {
+        document.body.classList.remove('light-theme');
+        themeToggle.textContent = '☀️';
+        localStorage.setItem('chat_theme', 'dark');
+    }
+}
+
+
+// --- End Theme Logic ---
 
 function scrollBottom() {
     messages.scrollTop = messages.scrollHeight;
